@@ -1,11 +1,13 @@
 package com.mukeshsolanki.snake.presentation.screen
 
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.mukeshsolanki.snake.R
@@ -27,15 +29,32 @@ fun GameScreen(gameEngine: GameEngine, score: Int) {
             modifier = Modifier.padding(contentPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            state.value?.let { Board(it) }
-            Controller {
-                when (it) {
-                    SnakeDirection.Up -> gameEngine.move = Pair(0, -1)
-                    SnakeDirection.Left -> gameEngine.move = Pair(-1, 0)
-                    SnakeDirection.Right -> gameEngine.move = Pair(1, 0)
-                    SnakeDirection.Down -> gameEngine.move = Pair(0, 1)
-                }
+            state.value?.let { boardState ->
+                Board(
+                    state = boardState,
+                    modifier = Modifier.pointerInput(Unit) {
+                        detectDragGestures { change, dragAmount ->
+                            val (dx, dy) = dragAmount
+
+                            when {
+                                dx > 20 && gameEngine.move != Pair(-1, 0) -> gameEngine.move = Pair(1, 0)   // Right
+                                dx < -20 && gameEngine.move != Pair(1, 0) -> gameEngine.move = Pair(-1, 0)  // Left
+                                dy > 20 && gameEngine.move != Pair(0, -1) -> gameEngine.move = Pair(0, 1)   // Down
+                                dy < -20 && gameEngine.move != Pair(0, 1) -> gameEngine.move = Pair(0, -1)  // Up
+                            }
+                        }
+                    }
+                )
             }
+//            state.value?.let { Board(it) }
+//            Controller {
+//                when (it) {
+//                    SnakeDirection.Up -> gameEngine.move = Pair(0, -1)
+//                    SnakeDirection.Left -> gameEngine.move = Pair(-1, 0)
+//                    SnakeDirection.Right -> gameEngine.move = Pair(1, 0)
+//                    SnakeDirection.Down -> gameEngine.move = Pair(0, 1)
+//                }
+//            }
         }
     }
 }
